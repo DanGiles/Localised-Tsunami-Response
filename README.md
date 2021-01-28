@@ -4,7 +4,6 @@ Each approach has its own folder.
 
 =====
 ## 1. Transfer Functions: Extended Green's Law
-=====
 
 Python code with C bindings which calculates the tsunami amplification factor (beta or alpha)
 for various sites.
@@ -45,5 +44,5 @@ maximum wave heights.
 
 =====
 ## 2. Multiple Layer Perceptron
-=====
+
 A neural network approach, which utilises keras to capture the localised response is contained in ./mlp/keras_mlp.py
