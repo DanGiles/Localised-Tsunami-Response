@@ -44,6 +44,7 @@ maximum wave heights.
 
 A neural network approach, which utilises keras to capture the localised response is contained in ./mlp/keras_mlp.py
 
+## References
 
 [1] Reymond, D., Okal, E. A., Hébert, H., & Bourdet, M. (2012). Rapid forecast of tsunami wave heights from a database of pre-computed simulations, and application during the 2011 Tohoku tsunami in French Polynesia. Geophysical Research Letters, 39 (11), 1-6. doi: 10.1029/2012GL051640
 
