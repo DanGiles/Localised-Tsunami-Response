@@ -6,7 +6,7 @@ Each approach has its own folder.
 ## 1. Transfer Functions: Extended Green's Law
 
 Python code with C bindings which calculates the tsunami amplification factor (beta or alpha)
-for various sites.
+for various sites. The formulations of the extended Green's Law were introduced in [1] and [2] respectively.
 
 ## Compiling the C bindings
 
@@ -43,3 +43,8 @@ maximum wave heights.
 ## 2. Multiple Layer Perceptron
 
 A neural network approach, which utilises keras to capture the localised response is contained in ./mlp/keras_mlp.py
+
+
+[1] Reymond, D., Okal, E. A., Hébert, H., & Bourdet, M. (2012). Rapid forecast of tsunami wave heights from a database of pre-computed simulations, and application during the 2011 Tohoku tsunami in French Polynesia. Geophysical Research Letters, 39 (11), 1-6. doi: 10.1029/2012GL051640
+
+[2] Lalli, F., Postacchini, M., & Brocchini, M. (2019). Long waves approaching the coast: Green's law generalization. Journal of Ocean Engineering and Marine Energy. doi: 10.1007/s40722-019-00152-9
