@@ -18,10 +18,7 @@ cc -fPIC -shared -o cfuncs.so gradient_descent.c
 
 ## File Structures
 
-All the data; Bathymetry, Coarse Grid Simulations and Fine Grid Simulations, must be stored in
-a ../Data folder. Please ensure that you set up the paths correctly.
-
-A main.py file located in the main folder.
+A main.py file is located in the main folder.
 The various parameters associated with the optimisation are specified in the params.py file.
 
 ## Workflow
