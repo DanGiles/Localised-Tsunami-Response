@@ -51,8 +51,8 @@ FineSimRes = FineSimRes[525:825,800:1200,:]
 num = len(SimRes[0,0,:])
 
 # Network Parameters
-n_hidden_1 = 256 # 1st layer number of neurons
-n_hidden_2 = 256 # 2nd layer number of neurons
+n_hidden = 256 # 1st layer number of neurons
+# n_hidden_2 = 256 # 2nd layer number of neurons
 n_input = (len(SimRes[:,0,0])*len(SimRes[0,:,0]))
 n_output = (len(FineSimRes[:,0,0])*len(FineSimRes[0,:,0]))
 num_epochs = 200
@@ -64,9 +64,11 @@ print(n_input,n_output)
 # Set up the Model
 def create_model(n_hidden_1,n_hidden_2,n_input):
 	model = Sequential()
-	model.add(Dense(n_hidden_1, input_dim=n_input, activation="relu", name="dense_1", kernel_regularizer=regularizers.l2(0.001)))
+	model.add(Dense(n_hidden, input_dim=n_input, activation="relu", name="dense_1", kernel_regularizer=regularizers.l2(0.001)))
 	model.add(Dropout(0.2))
-	model.add(Dense(n_hidden_2, activation='relu', name="dense_2", kernel_regularizer=regularizers.l2(0.001)))
+	model.add(Dense(n_hidden, activation='relu', name="dense_2", kernel_regularizer=regularizers.l2(0.001)))
+	model.add(Dropout(0.2))
+	model.add(Dense(n_hidden, activation='relu', name="dense_3", kernel_regularizer=regularizers.l2(0.001)))
 	model.add(Dropout(0.2))
 	model.add(Dense(n_output, activation="relu", name="predictions"))
 	# Compile model

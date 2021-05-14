@@ -16,7 +16,7 @@ from write2nc import *
 from make_array import *
 from sort import *
 from params import *
-
+from neighbour_index import *
 # # Load in the global bathymetry and predicted eta_max simulations (.nc)
 global_bathy = ""
 global_sim = [""]
@@ -33,15 +33,18 @@ t1 = time()
 # Compute list of indices corresponding to the positions in the coarse grid of each point ranked by bathymetry value
 idx_coarse = sort(Bath)
 # Compute coarse forecast over the coarse grid
-coarse_forecast = coarse_forecast(SimRes, Bath, idx_coarse, coarse_lowlim, coarse_highlim)
+# coarse_forecast = coarse_forecast(SimRes, Bath, idx_coarse, coarse_lowlim, coarse_highlim)
+idx_neighbour = neighbour_index(FineBath,idx_fine) ### Serach alogrithm to find nearest deeper neighbour, run once for each site
 #compute list of indices corresponding to the positions in the grid of each point ranked by bathymetry value
 idx_fine = sort(FineBath)
 # Compute the fine forecast and optimise for the amplification parameter (beta)
-betas, fine_forecast = beta_calculate(coarse_forecast, Bath, FineSimRes, FineBath, lat, lon, finelat, finelon, idx_fine,lowlim,highlim, hE)
+lowlim = np.amin(FineBath)
+alpha_guess = np.ones((np.shape(FineBath)))
+alpha, fine_forecast = alpha_calculate(SimRes, Bath, FineSimRes, FineBath, lat, lon, finelat, finelon, idx_fine,idx_neighbour,lowlim,highlim,alpha_guess)
 t2 = time()
-print('Runtime for coarse forecast, fine forecast and beta optimisation = %f \n'%(t2-t1))
+print('Runtime for coarse forecast, fine forecast and alpha optimisation = %f \n'%(t2-t1))
 
 # Write beta output to a netCDF files
-write2nc('Betas.nc',finelon, finelat, betas,'beta')
+write2nc('alphas.nc',finelon, finelat, alpha,'alpha')
 # Output of the forecasted maximum wave heights .npy file
 np.save('Forecasted.npy',fine_forecast)

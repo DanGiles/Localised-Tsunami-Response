@@ -12,7 +12,7 @@ from params import *
 from write2nc import *
 
 #
-def interpolate(lat,lon,lat_fine,lon_fine,Z,B,Bath_fine,imin,jmin):
+def interpolate(lat,lon,Z,B,Bath_fine):
 	'''
 	Interpolates coarse grid onto fine grid at one point by selecting nearest deeper points in the Coarse grid,
 	setting up a mesh on these points and then interpolating on the deepest point in the fine grid.
@@ -44,40 +44,29 @@ def interpolate(lat,lon,lat_fine,lon_fine,Z,B,Bath_fine,imin,jmin):
 	# print(umin,vmin,Z2[umin,vmin], B2[umin,vmin],B2, np.shape(B2), np.amax(B2), np.amin(B2), lat_fine )
 	# print(B, np.shape(B))#,B[imin,jmin])
 	# # find bathy point
-	temp_array = abs(Bath_fine[imin,jmin]-B2)
+	temp_array = abs(Bath_fine-B2)
 	umin,vmin = np.unravel_index(np.argmin(temp_array, axis=None), temp_array.shape)
 	# umin,vmin = np.argmin(abs(Bath_fine[imin,jmin]-B2))
 	# print(umin,vmin,Z2[umin,vmin], B2[umin,vmin])
 	return Z2[umin,vmin], B2[umin,vmin]
 
-def coarse_to_fine(SimRes, Bath, FineBath, Lat, Lon, FineLat, FineLon, lowlim, highlim, hE):
+
+def coarse_to_fine(SimRes, Bath, FineBath, Lat, Lon, FineLat, FineLon, alpha, imin,jmin):
 	'''
 	Interpolates the maximum wave heights from the coarse grid to the fine grid.
 	'''
 	(east, north)=np.shape(Bath)
-	(fine_east, fine_north)=np.shape(FineBath)
+	# (fine_east, fine_north)=np.shape(FineBath)
 	N = len(SimRes[0,0,:])
-	Fine_computed_heights2=np.zeros((fine_east,fine_north,N))
-
-	'''
-	Calculates the height at the minimum depth in the fine grid
-	Interpolation with adjacent coarse grid cells
-	'''
-	imin,jmin=np.where(FineBath==np.amin(FineBath))
-	imin,jmin=imin[0],jmin[0]
+	# Fine_computed_heights2=np.zeros((fine_east,fine_north,N))
 	'''
 	get closest big cell to small cell (imin, jmin)
 	'''
-	u,v= np.argmin(np.abs(Lat-FineLat[imin])),  np.argmin(np.abs(Lon-FineLon[jmin]))
-	print(u,v, Bath[u,v],SimRes[u,v,0])
+	u,v= np.argmin(np.abs(Lat-FineLat)),  np.argmin(np.abs(Lon-FineLon))
 
-	print("lowlim_fine = ", lowlim)
-	print("highlim_fine = ", highlim)
-	print("hE_fine = ", hE)
-	# Small coarse latitude and longitude tables over deepest point
 	num = 0
 	radius = 0
-	while Bath[u,v] > FineBath[imin,jmin]:
+	while Bath[u,v] > FineBath:
 	   # print(u,v,Bath[u,v], FineBath[imin,jmin])
 	   ind = np.unravel_index(np.argmin(Bath[u-1-radius:u+2+radius,v-1-radius:v+2+radius], axis=None), Bath.shape)
 	   ind_val = ind[1]
@@ -97,54 +86,19 @@ def coarse_to_fine(SimRes, Bath, FineBath, Lat, Lon, FineLat, FineLon, lowlim, h
 
 	Lon_grid=Lon[v-1-radius:v+2+radius]
 	Lat_grid=Lat[u-1-radius:u+2+radius]
-	# print(Lat_grid, FineLat[imin])
-	# print(Lon_grid, FineLon[jmin])
+
+	Z = np.zeros(N)
+	Fine_computed_heights = np.zeros(N)
 	for n in range(N):
 		Z_grid = SimRes[u-1-radius:u+2+radius,v-1-radius:v+2+radius,n]
 		B_grid = Bath[u-1-radius:u+2+radius,v-1-radius:v+2+radius]
-		Z,B=interpolate(Lat_grid,Lon_grid, FineLat,FineLon,Z_grid, B_grid,FineBath,imin,jmin)
-		Fine_computed_heights2[imin, jmin, n] = Z*(B/FineBath[imin,jmin])**(1/4)
-	print('Interpolated Wave Height')
-	print(Fine_computed_heights2[imin,jmin,:])
-	print('\n')
+		Z[n],B=interpolate(Lat_grid,Lon_grid,Z_grid, B_grid,FineBath)
 
-	return Fine_computed_heights2
-
-def neighbour_check(neighx,neighy,FineBath,xind,yind,min_x,max_x,min_y,max_y,count):
-	tempBath = FineBath[neighx,neighy]
-	check = False
-	num = 0
-	radius = 1
-	while check == False and num <= count:
-		for k in xind:
-			for j in yind:
-				if (min_x < k < max_x) and (min_y < j < max_y):
-					if (FineBath[k,j] < tempBath):# and all(i > 0 for i in Fine_computed_heights[k,j,:])):
-						neighx = k
-						neighy = j
-						# tempBath = FineBath[neighx,neighy]
-						check = True
-					else:
-						radius += 1
-						count += 1
-		xind = np.arange(neighx-radius, neighx+radius+1, 1)
-		yind = np.arange(neighy-radius, neighy+radius+1, 1)
-		# print(xind,yind)
-	# if all(i > 0 for i in Fine_computed_heights[neighx,neighy,:]):
-	return neighx,neighy,check
-
-def check(finelat, finelon, fine_forecast, FineBath):
-    for i in range(len(finelat)):
-	    for j in range(len(finelon)):
-	       for n in range(len(fine_forecast[i,j,:])):
-	       	   if fine_forecast[i,j,n] == 0.0 and FineBath[i,j] < 0.0:
-	               fine_forecast[i,j,n] = fine_forecast[i-1,j-1,n]
-
-    return fine_forecast
+	Fine_computed_heights = Z*alpha[imin,jmin]*(B/FineBath)**(1/4)
+	return Fine_computed_heights
 
 
-
-def forecasting(SimRes, Bath, FineBath, Betas, Lat, Lon, FineLat, FineLon, idx_list, lowlim, highlim, hE):
+def forecasting(SimRes, Bath, FineBath, alpha, Lat, Lon, FineLat, FineLon, idx_list, idx_neighbour, lowlim, highlim):
 	'''
 	Use precomputed beta values to forecast for unseen event.
 
@@ -156,95 +110,46 @@ def forecasting(SimRes, Bath, FineBath, Betas, Lat, Lon, FineLat, FineLon, idx_l
 	lowlim , highlim : range for Extended Green ’s Law
 	hE : typical value
 	'''
-	(east, north)=np.shape(Bath)
-	(fine_east, fine_north)=np.shape(FineBath)
+	(east, north) = np.shape(Bath)
+	(fine_east, fine_north) = np.shape(FineBath)
 	N = len(SimRes[0,0,:])
+	Fine_computed_heights = np.zeros((fine_east,fine_north,N))
+	x,y = int(idx_list[0,0]),int(idx_list[1,0])
 	# Interpolate wave heights from the coarse grid to the fine one.
 	print("Interpolation from coarse to fine")
-	Fine_computed_heights= coarse_to_fine(SimRes, Bath, FineBath, Lat, Lon, FineLat, FineLon, lowlim, highlim, hE)
-	x,y = int(idx_list[0,0]),int(idx_list[1,0])
-	i = 0
-	maxint = int(len(Betas.flatten())/10)
-	### Domain max/min #####
-	max_x = np.max(idx_list[0,:])
-	min_x = np.min(idx_list[0,:])
-	max_y = np.max(idx_list[1,:])
-	min_y = np.min(idx_list[1,:])
-
+	Fine_computed_heights[x,y,:]= coarse_to_fine(SimRes, Bath, FineBath[x,y], Lat, Lon, FineLat[x], FineLon[y], alpha, x, y)
+	print('Interpolation to fine grid and simulation')
+	print(Fine_computed_heights[x,y,:], alpha[x,y])
+	print('\n')
+	maxint = int(len(alpha.flatten())/10)
 	print("Fine Forecast")
 
-	print("lowlim_fine = ", lowlim)
-	print("highlim_fine = ", highlim)
-	print("hE_fine = ", hE)
-	# LON,LAT= np.meshgrid(FineLon, FineLat)
 	for i in range(1, fine_east*fine_north):
 		'''
 		Iterate through the fine grid by increasing bathymetry values
 		'''
+		# x,y = u,v
+		x,y = int(idx_neighbour[0,i]),int(idx_neighbour[1,i])
 		u,v= int(idx_list[0,i]),int(idx_list[1,i])
-		### Neighbour Region #####
-		xind = [u-1,u,u+1]
-		yind = [v-1,v,v+1]
 
-		if FineBath[u,v] < lowlim:
+		if FineBath [u,v] < highlim:
 			'''
-			Use Geen ’s law
+			Use extended Green ’s law
 			'''
-			for n in range (N):
-				Fine_computed_heights[u,v,n]= Fine_computed_heights[x,y,n]*(FineBath[x,y]/ FineBath[u,v]) **(1/4)
-
-		elif lowlim <= FineBath [u,v] < highlim:
-			'''
-			Use extended Green ’s law ( calculate beta using a gradient descent )
-			'''
-			for n in range (N):
-				Fine_computed_heights[u,v,n]= Fine_computed_heights[x,y,n]*(1+ Betas[u,v]*((hE - FineBath[u,v])/hE))*(FineBath [x,y]/FineBath [u,v]) **(1/4)
+			Fine_computed_heights[u,v,:]= Fine_computed_heights[x,y,:]*alpha[u,v]*(FineBath[x,y]/FineBath[u,v])**(1/4)
 
 		elif highlim <= FineBath[u,v] < 0.0:
 			'''
 			Extrapolate to the shoreline
 			'''
-			x,y = int(idx_list[0,i-1]),int(idx_list[1,i-1])
-			eta1 = np.zeros(N)
-			eta2 = np.zeros(N)
-			eta3 = np.zeros(N)
-			eta4 = np.zeros(N)
-			num = 0
-			try:
-				if FineBath[u-1,v] < FineBath[u,v] and np.all(np.isnan(Fine_computed_heights[u-1,v,:])!= True):
-					eta1[:] = Fine_computed_heights[u-1,v,:]#*(Bath[u-1,v]/Bath[u,v])**(1/4)
-					num += 1
-				if FineBath[u+1,v] < FineBath[u,v] and np.all(np.isnan(Fine_computed_heights[u+1,v,:])!= True):
-					eta2[:] = Fine_computed_heights[u+1,v,:]#*(Bath[u+1,v]/Bath[u,v])**(1/4)
-					num += 1
-				if FineBath[u,v-1] < FineBath[u,v] and np.all(np.isnan(Fine_computed_heights[u,v-1,:])!= True):
-					eta3[:] = Fine_computed_heights[u,v-1,:]#*(Bath[u,v-1]/Bath[u,v])**(1/4)
-					num += 1
-				if FineBath[u,v+1] < FineBath[u,v] and np.all(np.isnan(Fine_computed_heights[u,v+1,:])!= True):
-					eta4[:] = Fine_computed_heights[u,v+1,:]#*(Bath[u,v+1]/Bath[u,v])**(1/4)
-					num += 1
-				for n in range (N):
-					if num != 0:
-						Fine_computed_heights[u,v,n] = (eta1[n] + eta2[n] + eta3[n] + eta4[n])/num
-					else:
-						Fine_computed_heights[u,v,n] = Fine_computed_heights[int(idx_list[0,i-1]),int(idx_list[1,i-1]),n]
-			except:
-				if (not x in xind) and (not y in yind):
-					neighx = u
-					neighy = v
-					count = 4
-					x,y,check = neighbour_check(neighx,neighy,FineBath,xind,yind,min_x,max_x,min_y,max_y,count)
-					if check == False:
-						x,y = int(idx_list[0,i-1]),int(idx_list[1,i-1])
-				for n in range (N):
-					Fine_computed_heights[u,v,n] = Fine_computed_heights[x,y,n]
+			Fine_computed_heights[u,v,:]= Fine_computed_heights[x,y,:]
 
 		elif FineBath[u,v] >= 0.0:
 			break
 
 		if np.mod(i,maxint)==0:
-			print(int(i/len(Betas.flatten())*100),"% complete" )
-			print("beta = ", Betas[u,v])
+			print(int(i/len(alpha.flatten())*100),"% complete" )
+			print("beta = ", alpha[u,v])
 			print("Depth = ", FineBath[u,v])
 			print("Forecasted Wave Height = ", Fine_computed_heights[u,v,:])
 			print("\n")
