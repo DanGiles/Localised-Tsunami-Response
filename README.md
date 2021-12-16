@@ -6,7 +6,7 @@ Each approach has its own folder.
 ## 1. Transfer Functions: Extended Green's Law
 
 Python code with C bindings which calculates the tsunami amplification factor (beta or alpha)
-for various sites. The formulations of the extended Green's Law were introduced in [1] and [2] respectively.
+for various sites. Currently set up to deal with the alpha (Lalli) formulation only. The formulations of the extended Green's Law were introduced in [1] and [2] respectively.
 
 ## Compiling the C bindings
 
@@ -29,14 +29,13 @@ Green's Law to forecast to a specified highlim.
 - coarse_to_fine.py : Interpolates the maximum wave height on the coarse grid to the
 deepest point in a fine grid.
 
-- beta_calculate.py : Optimises for the beta parameter and forecasts for the maximum
-wave heights in a fine grid.
+- alpha_calculate.py (contained in fine_forecast.py): Optimises for the alpha parameter and forecasts for the maximum wave heights in a fine grid.
 
 - gauges_isobath.py : Calculates the wave heights at the gauge locations in the fine grids,
 calculates the relevant errors and then plots for each site.
 
 ## Outputs
-The code will output the optimised beta values for each site along with the forecasted
+The code will output the optimised alpha values for each site along with the forecasted
 maximum wave heights.
 
 =====

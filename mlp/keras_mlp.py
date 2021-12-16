@@ -1,7 +1,7 @@
+#!/usr/bin/env python
+# Daniel Giles (2021), UCD, Ireland
 """
 A Multilayer Perceptron approach used to forecast the loacl response
-
-
 """
 from __future__ import print_function
 from keras import layers
@@ -13,6 +13,8 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import Dropout
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
+import sys
+sys.path.append('../transfer_function/src/')
 from make_array import *
 from os import listdir
 from os.path import isfile, join
@@ -45,7 +47,7 @@ print("Loading fine data into arrays")
 finelon, finelat, FineBath, FineSimRes = make_array(local_bathy, local_eta, coarse=False)
 
 
-# Cropping the Data to smaller domains
+# Cropping the Data to smaller domains (Applicable for Cannes Region)
 SimRes = SimRes[150:300,300:450,:]
 FineSimRes = FineSimRes[525:825,800:1200,:]
 num = len(SimRes[0,0,:])
@@ -64,8 +66,7 @@ print(n_input,n_output)
 # Set up the Model
 def create_model(n_hidden_1,n_hidden_2,n_input):
 	model = Sequential()
-	model.add(Dense(n_hidden, input_dim=n_input, activation="relu", name="dense_1", kernel_regularizer=regularizers.l2(0.001)))
-	model.add(Dropout(0.2))
+	model.add(Dense(n_hidden, input_dim=n_input, activation="relu", name="dense_1"))
 	model.add(Dense(n_hidden, activation='relu', name="dense_2", kernel_regularizer=regularizers.l2(0.001)))
 	model.add(Dropout(0.2))
 	model.add(Dense(n_hidden, activation='relu', name="dense_3", kernel_regularizer=regularizers.l2(0.001)))

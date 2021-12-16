@@ -1,4 +1,5 @@
-#-*-coding:utf-8-*-
+#!/usr/bin/env python
+# Daniel Giles (2021), UCD, Ireland
 import numpy as np
 def coarse_forecast(SimRes, Bath, idx_list, lowlim, highlim):
 	'''
@@ -13,6 +14,7 @@ def coarse_forecast(SimRes, Bath, idx_list, lowlim, highlim):
 	print("lowlim_coarse = ", lowlim)
 	print("highlim_coarse = ", highlim)
 	east,north,N =np.shape(SimRes)
+	#print(N)
 	Computed_heights = np.copy(SimRes)
 	### Domain max/min #####
 	max_x = np.max(idx_list[0,:])
@@ -62,7 +64,7 @@ def neighbour_check(neighx,neighy,FineBath,xind,yind,min_x,max_x,min_y,max_y,cou
 		for k in xind:
 			for j in yind:
 				if (min_x < k < max_x) and (min_y < j < max_y):
-					if (FineBath[k,j] < tempBath):
+					if (FineBath[k,j] < tempBath):# and all(i > 0 for i in Fine_computed_heights[k,j,:])):
 						neighx = k
 						neighy = j
 						tempBath = FineBath[neighx,neighy]
@@ -72,5 +74,6 @@ def neighbour_check(neighx,neighy,FineBath,xind,yind,min_x,max_x,min_y,max_y,cou
 						count += 1
 		xind = np.arange(neighx-radius, neighx+radius+1, 1)
 		yind = np.arange(neighy-radius, neighy+radius+1, 1)
-
+		# print(xind,yind)
+	# if all(i > 0 for i in Fine_computed_heights[neighx,neighy,:]):
 	return neighx,neighy,check

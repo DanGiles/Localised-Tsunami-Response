@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-*-coding:utf-8-*-
+# Daniel Giles (2021), UCD, Ireland
 """
 Plotting the forecasted wave heights and calculating the relevant error
 along an isobath

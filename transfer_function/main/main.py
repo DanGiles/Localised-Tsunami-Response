@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-*-coding:utf-8-*-
+# Daniel Giles (2021), UCD, Ireland
 from netCDF4 import Dataset
 import numpy as np
 import os
@@ -42,7 +42,7 @@ lowlim = np.amin(FineBath)
 alpha_guess = np.ones((np.shape(FineBath)))
 alpha, fine_forecast = alpha_calculate(SimRes, Bath, FineSimRes, FineBath, lat, lon, finelat, finelon, idx_fine,idx_neighbour,lowlim,highlim,alpha_guess)
 t2 = time()
-print('Runtime for coarse forecast, fine forecast and alpha optimisation = %f \n'%(t2-t1))
+print('Runtime for fine forecast and alpha optimisation = %f \n'%(t2-t1))
 
 # Write beta output to a netCDF files
 write2nc('alphas.nc',finelon, finelat, alpha,'alpha')
